@@ -106,7 +106,9 @@ async def get_douyin_app_stream_data(url: str, proxy_addr: OptionalStr = None, c
                 "browser_platform": "Win32",
                 "browser_name": "Chrome",
                 "browser_version": "116.0.0.0",
-                "web_rid": web_rid
+                "web_rid": web_rid,
+                'msToken': '',
+                'a_bogus': ''
 
             }
             api = f'https://live.douyin.com/webcast/room/web/enter/?{urllib.parse.urlencode(params)}'
@@ -2058,6 +2060,12 @@ async def get_liveme_stream_url(url: str, proxy_addr: OptionalStr = None, cookie
     }
     if cookies:
         headers['Cookie'] = cookies
+
+    if 'index.html' not in url:
+        html_str = await async_req(url, proxy_addr=proxy_addr, headers=headers, abroad=True)
+        match_url = re.search('<meta property="og:url" content="(.*?)">', html_str)
+        if match_url:
+            url = match_url.group(1)
 
     room_id = url.split("/index.html")[0].rsplit('/', maxsplit=1)[-1]
     sign_data = execjs.compile(open(f'{JS_SCRIPT_PATH}/liveme.js').read()).call('sign', room_id,
